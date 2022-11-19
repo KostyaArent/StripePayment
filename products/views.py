@@ -1,9 +1,10 @@
 import stripe
+
+from asgiref.sync import sync_to_async
+
 from django.conf import settings
 from django.http import JsonResponse
-from django.shortcuts import redirect, get_object_or_404
 from django.urls import reverse
-from django.views import View
 from django.views.generic import TemplateView, DetailView
 
 from .models import Item
@@ -32,25 +33,27 @@ class PaymentCancelView(TemplateView):
     template_name = "payment/cancel.html"
 
 
-class CreateCheckoutSessionView(View):
-    def get(self, request, *args, **kwargs):
+async def a_create_checkout_session_view(request, pk):
+    method = request.method
+    if method == "GET":
         success_url = request.build_absolute_uri(reverse('payment-success', ))
         cancel_url = request.build_absolute_uri(reverse('payment-cancel', ))
-        item_id = self.kwargs.get("pk")
-        item = get_object_or_404(Item, pk=item_id)
+        item = await Item.objects.filter(pk=pk).afirst()
+        if not item:
+            return JsonResponse({
+                'status': 404,
+                'detail': "item with id {} not found.".format(pk)
+            })
         try:
-            checkout_session = stripe.checkout.Session.create(
+            checkout_session = await sync_to_async(stripe.checkout.Session.create)(
                 line_items=[
                     {
-                        # Provide the exact Price ID (for example, pr_1234) of the product you want to sell
                         'price_data': {
-                          # The currency parameter determines which
-                          # payment methods are used in the Checkout Session.
-                          'currency': 'usd',
-                          'product_data': {
-                            'name': item.name,
-                          },
-                          'unit_amount': item.price,
+                            'currency': 'usd',
+                            'product_data': {
+                                'name': item.name,
+                            },
+                            'unit_amount': item.price,
                         },
                         'quantity': 1,
                     },
@@ -61,6 +64,13 @@ class CreateCheckoutSessionView(View):
             )
         except Exception as e:
             return str(e)
+
         return JsonResponse({
-            'sessionId': checkout_session.get('id')
+            'status': 200,
+            'sessionId': checkout_session.get('id', None)
+        })
+    else:
+        return JsonResponse({
+            'status': 405,
+            'detail': "Method {} is not allowed.".format(method)
         })

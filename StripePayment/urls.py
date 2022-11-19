@@ -1,17 +1,17 @@
 from django.contrib import admin
 from django.urls import path
 from products.views import (
-    CreateCheckoutSessionView,
     ItemDetailView,
     PaymentSuccessView,
-    PaymentCancelView
+    PaymentCancelView,
+    a_create_checkout_session_view,
 )
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('item/<int:pk>', ItemDetailView.as_view(), name='item-detail'),
+    path('buy/<int:pk>', a_create_checkout_session_view, name='a-create-checkout-session'),
     path('success/', PaymentSuccessView.as_view(), name='payment-success'),
-    path('cancel/', PaymentCancelView.as_view(), name='payment-cancel'),
-    path('buy/<int:pk>', CreateCheckoutSessionView.as_view(), name='create-checkout-session')
+    path('cancel/', PaymentCancelView.as_view(), name='payment-cancel')
 ]
