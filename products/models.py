@@ -7,7 +7,6 @@ class Item(models.Model):
     price = models.IntegerField(default=0)  # Hundredths of currency
 
     class Meta:
-        ordering = ('-created',)
         verbose_name = 'Item'
         verbose_name_plural = 'Items'
 
@@ -19,10 +18,9 @@ class Item(models.Model):
 
 
 class Order(models.Model):
-    items = models.ManyToManyField(Item)
+    paid = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ('-created',)
         verbose_name = 'Order'
         verbose_name_plural = 'Orders'
 
@@ -31,9 +29,8 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, related_name='items')
-    item = models.ForeignKey(Item, related_name='order_items')
-    quantity = models.PositiveIntegerField(default=1)
+    order = models.ForeignKey(Order, related_name='items', on_delete=models.PROTECT)
+    item = models.ForeignKey(Item, related_name='order_items', on_delete=models.PROTECT)
 
     def __str__(self):
         return '{}'.format(self.id)

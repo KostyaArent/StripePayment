@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-
+{% csrf_token %}
     <div class="absolute top-1/3 max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
         <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ item.name }}</h5>
         <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ item.description }}</p>
@@ -20,12 +20,29 @@
             <button id="buy-button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                 Buy {{ item.getget_display_price }}$
             </button>
+            <button id="add-button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                Add to cart
+            </button>
         </div>
     </div>
 
     <script type="text/javascript">
-      let stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
-      let buyButton = document.getElementById('buy-button');
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const headers = new Headers({
+        'Content-Type': 'x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken
+    });
+        let addButton = document.getElementById('add-button');
+        let stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+        let buyButton = document.getElementById('buy-button');
+            addButton.addEventListener('click', function() {
+                fetch("{% url 'cart:cart_add' item.pk %}",
+                {method: 'POST',
+                headers})
+            .then(response => {
+                return response.json()
+            })
+          });
       buyButton.addEventListener('click', function() {
           this.disable = true;
           this.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-[3px] border-current border-t-transparent text-white rounded-full" role="status" aria-label="loading">
@@ -41,6 +58,20 @@
         .then(session => {
             stripe.redirectToCheckout({ sessionId: session.sessionId })})
       });
+      function getCookie(name) {
+          if (!document.cookie) {
+            return null;
+          }
+
+          const xsrfCookies = document.cookie.split(';')
+            .map(c => c.trim())
+            .filter(c => c.startsWith(name + '='));
+
+          if (xsrfCookies.length === 0) {
+            return null;
+          }
+          return decodeURIComponent(xsrfCookies[0].split('=')[1]);
+      };
     </script>
 
 {% endblock %}

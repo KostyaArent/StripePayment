@@ -19,8 +19,10 @@ class ItemDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ItemDetailView, self).get_context_data(**kwargs)
+        cart_item_form = CartAddItemForm()
         context.update({
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLISHABLE_KEY,
+            "cart_product_form": cart_item_form
         })
         return context
 
