@@ -9,5 +9,5 @@ class Item(models.Model):
     def __str__(self):
         return self.name
 
-    def getget_display_price(self):
+    def get_display_price(self):
         return "{0:.2f}".format(self.price / 100)
