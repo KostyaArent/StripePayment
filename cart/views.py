@@ -1,3 +1,5 @@
+import json
+
 from django.http import JsonResponse
 from django.shortcuts import redirect, get_object_or_404, render
 from django.views.decorators.http import require_POST
@@ -6,13 +8,20 @@ from .cart import Cart
 
 
 @require_POST
-def cart_add(request, item_id):
-    cart = Cart(request)
-    item = get_object_or_404(Item, pk=item_id)
-    cart.add(item=item)
-    return JsonResponse({
-            'status': 200
-        })
+def cart_add(request):
+    body = json.loads(request.body)
+    item_id = body.get('item_id', None)
+    if item_id and item_id.isnumeric():
+        cart = Cart(request)
+        item = get_object_or_404(Item, pk=item_id)
+        cart.add(item=item)
+        return JsonResponse({
+                'status': 200
+            })
+    else:
+        return JsonResponse({
+                'status': 404
+            })
 
 
 def cart_remove(request, item_id):

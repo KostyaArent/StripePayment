@@ -5,12 +5,22 @@ from asgiref.sync import sync_to_async
 from django.conf import settings
 from django.http import JsonResponse
 from django.urls import reverse
-from django.views.generic import TemplateView, DetailView
+from django.views.generic import (
+    TemplateView, DetailView,
+    ListView
+)
 
 from .models import Item
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
+
+class ItemListView(ListView):
+    paginate_by = 6
+    model = Item
+    context_object_name = "item_list"
+    template_name = "item_list.html"
 
 
 class ItemDetailView(DetailView):
@@ -19,10 +29,8 @@ class ItemDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ItemDetailView, self).get_context_data(**kwargs)
-        cart_item_form = CartAddItemForm()
         context.update({
             "STRIPE_PUBLIC_KEY": settings.STRIPE_PUBLISHABLE_KEY,
-            "cart_product_form": cart_item_form
         })
         return context
 

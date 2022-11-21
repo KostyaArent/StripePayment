@@ -1,5 +1,6 @@
 # IDE ignored files
 .idea/
+identifier.sqlite
 
 # Django #
 *.log
@@ -8,6 +9,7 @@
 __pycache__
 db.sqlite3
 media
+orm_scripts/
 
 # Backup files #
 *.bak
@@ -17,6 +19,7 @@ media
 
 # IntelliJ
 out/
+
 
 # JIRA plugin
 atlassian-ide-plugin.xml

@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
 from products.views import (
-    ItemDetailView,
     PaymentSuccessView,
     PaymentCancelView,
     a_create_checkout_session_view,
@@ -9,9 +8,16 @@ from products.views import (
 
 
 urlpatterns = [
+    # ADMIN VIEWS
     path('admin/', admin.site.urls),
+
+    # CART VIEWS
     path('cart/', include('cart.urls', namespace='cart')),
-    path('item/<int:pk>', ItemDetailView.as_view(), name='item-detail'),
+
+    # PRODUCTS VIEWS
+    path('item/', include('products.urls', namespace='products')),
+
+    # PAYMENT VIEWS
     path('buy/<int:pk>', a_create_checkout_session_view, name='a-create-checkout-session'),
     path('success/', PaymentSuccessView.as_view(), name='payment-success'),
     path('cancel/', PaymentCancelView.as_view(), name='payment-cancel')

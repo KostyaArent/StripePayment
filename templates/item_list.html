@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>Buy cool new product</title>
+{% endblock %}
+
+{% block head_scripts %}
+    <!-- STRIPE START -->
+        <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+        <script src="https://js.stripe.com/v3/"></script>
+    <!-- STRIPE END -->
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+    <section class="overflow-hidden text-gray-700 ">
+        <div class="container px-5 py-2 mx-auto lg:pt-12 lg:px-32">
+            <div class="flex flex-wrap -m-1 md:-m-2">
+                {% for item in item_list %}
+                <div class="flex flex-wrap m-5 w-1/4 p-6 bg-white border border-gray-200 rounded-lg shadow-md dark:bg-gray-800 dark:border-gray-700">
+                    <div class="w-full p-1 md:p-2">
+                        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ item.name }}</h5>
+                        <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">{{ item.description }}</p>
+                        <p class="mb-3 font-normal text-white dark:text-gray-400"> ${{ item.get_display_price }}</p>
+                        <div class="flex justify-center items-center">
+                            <button class="add-button inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800" value="{{ item.pk }}">
+                                Add to cart
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </section>
+
+    <div class="flex justify-center">
+  <nav aria-label="Page navigation example">
+    <ul class="flex list-style-none">
+        {% if page_obj.has_previous %}
+      <li class="page-item">
+          <a
+          class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+          href="?page=1" tabindex="-1">First</a>
+      </li>
+            <li class="page-item">
+          <a
+          class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+          href="?page={{ page_obj.previous_page_number }}" tabindex="-1">{{ page_obj.previous_page_number }}</a>
+      </li>
+        {% endif %}
+      <li class="page-item active"><a
+          class="page-link relative block py-1.5 px-3 rounded border-0 bg-blue-600 outline-none transition-all duration-300 rounded text-white hover:text-white hover:bg-blue-600 shadow-md focus:shadow-md"
+          href="#">{{ page_obj.number }}<span class="visually-hidden">(current)</span></a></li>
+    {% if page_obj.has_next %}
+      <li class="page-item"><a
+          class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+          href="?page={{ page_obj.next_page_number }}">{{ page_obj.next_page_number }}</a></li>
+      <li class="page-item"><a
+          class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+          href="?page={{ page_obj.next_page_number }}">Next</a></li>
+        <li class="page-item"><a
+          class="page-link relative block py-1.5 px-3 rounded border-0 bg-transparent outline-none transition-all duration-300 rounded text-gray-800 hover:text-gray-800 hover:bg-gray-200 focus:shadow-none"
+          href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+    {% endif %}
+    </ul>
+  </nav>
+</div>
+
+    <script type="text/javascript">
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const headers = new Headers({
+        'Content-Type': 'x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken
+    });
+        let addButtons = document.querySelectorAll('button[class^=add-button]');
+        addButtons.forEach(function(elem) {
+            elem.addEventListener("click", function(e){
+                console.log(this.value);
+                addToCart(this.value)
+            });
+        });
+            function addToCart(itemId) {
+                console.log(itemId)
+                fetch("{% url 'cart:cart_add' %}",
+                {method: 'POST',
+                headers,
+                body: JSON.stringify({item_id: itemId})})
+            .then(response => {
+                console.log(response);
+                return response.json()
+            })
+          };
+        // Create a new Checkout Session using the server-side endpoint
+        // Redirect to Stripe Session Checkout
+      function getCookie(name) {
+          if (!document.cookie) {
+            return null;
+          }
+          const xsrfCookies = document.cookie.split(';')
+            .map(c => c.trim())
+            .filter(c => c.startsWith(name + '='));
+
+          if (xsrfCookies.length === 0) {
+            return null;
+          }
+          return decodeURIComponent(xsrfCookies[0].split('=')[1]);
+      };
+    </script>
+
+{% endblock %}
