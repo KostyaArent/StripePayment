@@ -20,9 +20,6 @@
             <button id="buy-button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
                 Buy {{ item.getget_display_price }}$
             </button>
-            <button id="add-button" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                Add to cart
-            </button>
         </div>
     </div>
 
@@ -32,22 +29,13 @@
         'Content-Type': 'x-www-form-urlencoded',
         'X-CSRFToken': csrfToken
     });
-        let addButton = document.getElementById('add-button');
         let stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
         let buyButton = document.getElementById('buy-button');
-            addButton.addEventListener('click', function() {
-                fetch("{% url 'cart:cart_add' item.pk %}",
-                {method: 'POST',
-                headers})
-            .then(response => {
-                return response.json()
-            })
-          });
       buyButton.addEventListener('click', function() {
           this.disable = true;
           this.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-[3px] border-current border-t-transparent text-white rounded-full" role="status" aria-label="loading">
     <span class="sr-only">Loading...</span>
-  </span> &nbsp; Progress...`;
+  </span> &nbsp;`;
         // Create a new Checkout Session using the server-side endpoint
         // Redirect to Stripe Session Checkout
         fetch("{% url 'a-create-checkout-session' item.pk %}",

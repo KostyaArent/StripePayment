@@ -1,4 +1,6 @@
 from decimal import Decimal
+
+from asgiref.sync import sync_to_async
 from django.conf import settings
 from products.models import Item
 
@@ -50,6 +52,21 @@ class Cart(object):
         # getting item objects and adding them to cart
         items = Item.objects.filter(id__in=items_ids)
         for item in items:
+            self.cart[str(item.id)]['item'] = item
+
+        for item in self.cart.values():
+            item['price'] = Decimal(item['price'])
+            item['display_price'] = item['price']/100
+            yield item
+
+    async def __aiter__(self):
+        """
+        Enumeration through items in the cart and getting items from the database.
+        """
+        items_ids = self.cart.keys()
+        # getting item objects and adding them to cart
+        items = await sync_to_async(Item.objects.filter)(id__in=items_ids)
+        async for item in items:
             self.cart[str(item.id)]['item'] = item
 
         for item in self.cart.values():

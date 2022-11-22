@@ -95,6 +95,13 @@
       </path>
     </svg>
   </a>
+      <span id="cart-count" class="text-white bg-red-700 absolute rounded-full text-xs -mt-2.5 ml-2 py-0 px-1.5">
+          {% if cart %}
+              {{ cart|length }}
+          {% else %}
+              {{ 0 }}
+          {% endif %}
+      </span>
   </div>
   <!-- Right elements -->
   </div>

@@ -5,9 +5,14 @@
 {% endblock %}
 
 {% block head_scripts %}
+    <!-- STRIPE START -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?version=3.52.1&features=fetch"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+    <!-- STRIPE END -->
 {% endblock %}
 
 {% block content %}
+    {% csrf_token %}
     <div class="relative z-10" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
   <!--
     Background backdrop, show/hide based on slide-over state.
@@ -80,17 +85,19 @@
                 <p>Subtotal</p>
                 <p>${{ cart.get_total_price|stringformat:".2f" }}</p>
               </div>
+                {% if cart|length %}
               <p class="mt-0.5 text-sm text-gray-500">Shipping and taxes calculated at checkout.</p>
               <div class="mt-6">
-                <a href="#" class="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700">Checkout</a>
+                <button id="buy-button" class="flex items-center justify-center rounded-md border border-transparent bg-indigo-600 px-6 py-3 text-base font-medium text-white shadow-sm hover:bg-indigo-700">Checkout</button>
               </div>
+                {% endif %}
               <div class="mt-6 flex justify-center text-center text-sm text-gray-500">
                 <p>
                   or
-                  <button type="button" class="font-medium text-indigo-600 hover:text-indigo-500">
+                  <a href="{% url 'products:item-list' %}" class="font-medium text-indigo-600 hover:text-indigo-500">
                     Continue Shopping
                     <span aria-hidden="true"> &rarr;</span>
-                  </button>
+                  </a>
                 </p>
               </div>
             </div>
@@ -100,4 +107,32 @@
     </div>
   </div>
 </div>
+
+    <script>
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const headers = new Headers({
+        'Content-Type': 'x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken
+    });
+        let stripe = Stripe('{{ STRIPE_PUBLIC_KEY }}');
+        let buyButton = document.getElementById('buy-button');
+      buyButton.addEventListener('click', function() {
+          this.disable = true;
+          this.innerHTML = `<span class="animate-spin inline-block w-4 h-4 border-[3px] border-current border-t-transparent text-white rounded-full" role="status" aria-label="loading">
+    <span class="sr-only">Loading...</span>
+  </span> &nbsp; Progress...`;
+        // Create a new Checkout Session using the server-side endpoint
+        // Redirect to Stripe Session Checkout
+        fetch("{% url 'a-create-group-checkout-session' %}",
+            {method: 'GET'})
+        .then(response => {
+            return response.json()
+        })
+        .then(session => {
+            fetch("{% url 'cart:cart-clear' %}",
+                {method: 'POST',
+                headers})
+            stripe.redirectToCheckout({ sessionId: session.sessionId })})
+      });
+    </script>
 {% endblock %}

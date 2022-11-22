@@ -4,6 +4,7 @@ from products.views import (
     PaymentSuccessView,
     PaymentCancelView,
     a_create_checkout_session_view,
+    a_create_group_checkout_session_view,
 )
 
 
@@ -19,6 +20,7 @@ urlpatterns = [
 
     # PAYMENT VIEWS
     path('buy/<int:pk>', a_create_checkout_session_view, name='a-create-checkout-session'),
+    path('buy/group/', a_create_group_checkout_session_view, name='a-create-group-checkout-session'),
     path('success/', PaymentSuccessView.as_view(), name='payment-success'),
     path('cancel/', PaymentCancelView.as_view(), name='payment-cancel')
 ]
